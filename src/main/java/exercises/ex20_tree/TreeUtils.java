@@ -1,6 +1,10 @@
 package exercises.ex20_tree;
 
+import java.util.ArrayList;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class TreeUtils {
 
@@ -39,5 +43,45 @@ public class TreeUtils {
         var newLeft = mirror(tree.right());
         var newRight = mirror(tree.left());
         return new TreeNode<>(tree.value(), newLeft, newRight);
+    }
+
+    public static <T> String prettyPrint(TreeNode<T> tree) {
+        if (tree == null) return "";
+
+        StringBuilder result = new StringBuilder(tree.value().toString() + "\n");
+
+        var childNodes = new ArrayList<TreeNode<T>>();
+        if (tree.left() != null) childNodes.add(tree.left());
+        if (tree.right() != null) childNodes.add(tree.right());
+
+        if (!childNodes.isEmpty()) {
+            result.append("|\n");
+            while (!childNodes.isEmpty()) {
+                var nextChild = childNodes.removeFirst();
+                var isLast = childNodes.isEmpty();
+                result.append(prettyPrint(nextChild).lines()
+                        .reduce("", appendAndIndent(isLast ? "'-- " : "+-- ", isLast ? "    " : "|   ")));
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * Returns an operator that appends an indented version of the second parameter to the first parameter.
+     * The indentation string is given by the parameters.
+     */
+    private static BinaryOperator<String> appendAndIndent(String indentFirst, String indentNext) {
+        return (previous, strToAppend) -> (previous.isEmpty() ? indentFirst : previous + indentNext) + strToAppend + "\n";
+    }
+
+    static void main() {
+        var tree = new TreeNode<>("A",
+                new TreeNode<>("B",
+                        new TreeNode<>("C", null, null),
+                        new TreeNode<>("D", null, null)),
+                new TreeNode<>("E",
+                        new TreeNode<>("F", null, null),
+                        null));
+        System.out.println(prettyPrint(tree));
     }
 }
